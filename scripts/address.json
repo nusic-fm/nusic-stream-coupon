@@ -1,0 +1,11 @@
+{
+    "localhost": {
+        "nusicStreamCoupon":"0x5FbDB2315678afecb367f032d93F642f64180aa3"
+    },
+    "matic": {
+        "nusicStreamCoupon":"0x2161C9a325EDA297B07816A1513Bf39C247581cf"
+    },
+    "polygon": {
+        "nusicStreamCoupon":"0xD0419a8d40F4bE0CB988b29040582ff1B6bBA460"
+    }
+}
