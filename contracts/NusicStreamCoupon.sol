@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "hardhat/console.sol";
 
 
@@ -33,15 +34,16 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
     struct MusicConfig {
         address contractAddress; // The contract address
         uint256 tokenId; // The ID of the token on the contract
-        string contractType; // Music collection type
-        address contractOwner; // NFT Contract Owner Address
+        uint256 contractType; // Music collection type -- 1 for EDITION or 2 for COLLECTION
+        address contractOwner; // NFT Contract Owner Address,
+        uint256 fractions;
     }
 
     mapping(uint256 => string) private _tokenURIs;
 
     mapping(address => uint256[]) public usersMusic;  // userAddress => configIds
     mapping(uint256 => MusicConfig) public tokenMapping; // configId => MusicConfig
-    mapping(address => ContractType) public contractType;  // contract address => configId
+    mapping(address => uint256) public contractType;  // contract address => 1 for EDITION or 2 for COLLECTION
 
     mapping(address => mapping(uint256 => uint256)) public configMapping; // contractAddress => tokenId => configId
     mapping(uint256 => uint256) public configTokenMapping; // configId => token Id in this contract
@@ -107,32 +109,36 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
         emit TokenMinted(_to, _id, _amount);
     }
 */
-    function registerEdition(address contractAddress) public whenNotPaused {
+    function testEnum(address addr1, address addr2) public {
+        //contractType[addr1] = EDITION;
+        //contractType[addr2] = COLLECTION;
+        contractType[addr1] = 1;
+        contractType[addr2] = 2;
+        
+    }
+    function registerEdition(address contractAddress, uint256 _fractions) public whenNotPaused {
         uint256 _configId;
         uint256 _tokenId = 0;
-        string memory _type = "Edition";
+        uint256 _type = 1; // Edition
+        ERC721 _erc721 = ERC721(contractAddress);
+
+        require(contractType[contractAddress] == 0, "Contract Already Registered as Edition"); 
+        //_erc721.owner   
+
         _configId = uint256(keccak256(abi.encodePacked(contractAddress, _tokenId, _type)));
-
-
 
         configMapping[contractAddress][_tokenId] = _configId;
         usersMusic[msg.sender].push(_configId);
-        tokenMinted++;
-        configTokenMapping[_configId] = tokenMinted;
-        contractConfig[contractAddress] = _configId;
+        //tokenMinted++;
+        //configTokenMapping[_configId] = tokenMinted;
+        contractType[contractAddress] = 1;
         tokenMapping[_configId] = MusicConfig({
             contractAddress: contractAddress, // The contract address
             tokenId: _tokenId, // The ID of the token on the contract
-            contractType: _type, // Music collection type 
-            contractOwner: msg.sender // NFT contract owner
+            contractType: 1, // Music collection type 
+            contractOwner: msg.sender, // NFT contract owner
+            fractions: _fractions
         });
-/*
-        mapping(address => uint256[]) public usersMusic;  // userAddress => configIds
-    mapping(uint256 => MusicConfig) public tokenMapping; // configId => MusicConfig
-
-    mapping(address => mapping(uint256 => uint256)) public configMapping; // contractAddress => tokenId => configId
-    mapping(uint256 => uint256) public configTokenMapping; // configId => token Id of Nusic Stream coupon contract
-*/
     }
 
     function claim(uint256 streamCount, uint256 timestamp, bytes calldata signature) public whenNotPaused{
