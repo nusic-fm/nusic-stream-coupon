@@ -9,7 +9,7 @@ async function main() {
   const NusicStreamCoupon:NusicStreamCoupon__factory =  await ethers.getContractFactory("NusicStreamCoupon");
   
   // Using address for localhost
-  const nusicStreamCoupon:NusicStreamCoupon = await NusicStreamCoupon.deploy();
+  const nusicStreamCoupon:NusicStreamCoupon = await NusicStreamCoupon.deploy("Coupon", "NFTT");
 
   await nusicStreamCoupon.deployed(); 
   console.log("NusicStreamCoupon deployed to:", nusicStreamCoupon.address);
