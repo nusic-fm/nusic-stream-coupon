@@ -26,17 +26,13 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
     string private _name;
     string private _symbol;
 
-    enum ContractType {
-        Edition,
-        Collection
-    }
-
     struct MusicConfig {
         address contractAddress; // The contract address
         uint256 tokenId; // The ID of the token on the contract
         uint256 contractType; // Music collection type -- 1 for EDITION or 2 for COLLECTION
         address contractOwner; // NFT Contract Owner Address,
         uint256 fractions;
+        string tokenURI;
     }
 
     mapping(uint256 => string) private _tokenURIs;
@@ -48,6 +44,7 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
     mapping(address => mapping(uint256 => uint256)) public configMapping; // contractAddress => tokenId => configId
     mapping(uint256 => uint256) public configTokenMapping; // configId => token Id in this contract
 
+    mapping(uint256 => mapping(address => uint256)) public streamCount; // tokenId => holder address => stream count
 
     event Claimed(address indexed to, uint256 tokenId, address nftContractAddress, uint256 nftContractTokenNumber);
 
@@ -112,15 +109,18 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
     function testEnum(address addr1, address addr2) public {
         //contractType[addr1] = EDITION;
         //contractType[addr2] = COLLECTION;
+
+        //Ownable  own = Ownable(address);
         contractType[addr1] = 1;
         contractType[addr2] = 2;
         
     }
-    function registerEdition(address contractAddress, uint256 _fractions) public whenNotPaused {
+
+    function registerEdition(address contractAddress, uint256 _fractions, string memory _tokenURI) public whenNotPaused {
         uint256 _configId;
         uint256 _tokenId = 0;
         uint256 _type = 1; // Edition
-        ERC721 _erc721 = ERC721(contractAddress);
+        //ERC721 _erc721 = ERC721(contractAddress);
 
         require(contractType[contractAddress] == 0, "Contract Already Registered as Edition"); 
         //_erc721.owner   
@@ -135,20 +135,62 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
         tokenMapping[_configId] = MusicConfig({
             contractAddress: contractAddress, // The contract address
             tokenId: _tokenId, // The ID of the token on the contract
-            contractType: 1, // Music collection type 
+            contractType: _type, // Music collection type 
             contractOwner: msg.sender, // NFT contract owner
-            fractions: _fractions
+            fractions: _fractions,
+            tokenURI:_tokenURI
         });
     }
 
-    function claim(uint256 streamCount, uint256 timestamp, bytes calldata signature) public whenNotPaused{
+    function registerCollection(address contractAddress, uint256 _tokenId, string memory _tokenURI) public whenNotPaused {
+        uint256 _configId;
+        uint256 _type = 2; // Collection
+        //ERC721 _erc721 = ERC721(contractAddress);
 
-        bytes32 msgHash = keccak256(abi.encodePacked(msg.sender, streamCount,timestamp, address(this)));
+        require(contractType[contractAddress] != 1, "Contract Already Registered as Edition"); 
+        if(contractType[contractAddress] == 2) {
+            require(configMapping[contractAddress][_tokenId] == 0, "Colleciton with given token id already registered");
+        }
+
+        _configId = uint256(keccak256(abi.encodePacked(contractAddress, _tokenId, _type)));
+
+        configMapping[contractAddress][_tokenId] = _configId;
+        usersMusic[msg.sender].push(_configId);
+        //tokenMinted++;
+        //configTokenMapping[_configId] = tokenMinted;
+        contractType[contractAddress] = 1;
+        tokenMapping[_configId] = MusicConfig({
+            contractAddress: contractAddress, // The contract address
+            tokenId: _tokenId, // The ID of the token on the contract
+            contractType: _type, // Music collection type 
+            contractOwner: msg.sender, // NFT contract owner
+            fractions: 2,
+            tokenURI:_tokenURI
+        });
+    }
+    
+
+    function claim(uint256 _configId, address _contractAddress,uint256 _tokenIdInContract, uint256 _streamCount, uint256 _timestamp, uint256 _fractionCount, bytes calldata signature) public whenNotPaused{
+
+        bytes32 msgHash = keccak256(abi.encodePacked(msg.sender, _contractAddress, _tokenIdInContract, _streamCount, _timestamp));
         bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", msgHash));
-        require(owner() == signedHash.recover(signature), "Signer address mismatch.");
+        require(managerAddress == signedHash.recover(signature), "Signer address mismatch.");
         //_safeMint(msg.sender, tokenMinted);
-        _mint(msg.sender, tokenMinted, 5, "");
-        tokenMinted++;
+        //tokenMinted++;
+        MusicConfig memory _musicConfig = tokenMapping[_configId];
+        require(_musicConfig.contractAddress == _contractAddress, "Incorrect Config provided");
+
+        uint256 _tokenId = configTokenMapping[_configId];
+        if(_tokenId == 0) {
+            _tokenId = ++tokenMinted;
+            configTokenMapping[_configId] = _tokenId;
+        }
+        uint256 _tokenSupply = totalSupply(_tokenId); 
+        require(_tokenSupply + _fractionCount <= _musicConfig.fractions, "Cannot mint too much");
+        
+
+        _mint(msg.sender, _tokenId, _fractionCount, "");
+
         emit Claimed(msg.sender, tokenMinted, address(0), 1);
 
         /*
