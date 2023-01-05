@@ -116,24 +116,29 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
         
     }
 
-    function registerEdition(address contractAddress, uint256 _fractions, string memory _tokenURI) public whenNotPaused {
+    function registerEdition(address _contractAddress, uint256 _fractions, string memory _tokenURI, bytes calldata signature) public whenNotPaused {
+        
+        bytes32 msgHash = keccak256(abi.encodePacked(msg.sender, _contractAddress, _fractions));
+        bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", msgHash));
+        require(managerAddress == signedHash.recover(signature), "Signer address mismatch.");
+        
         uint256 _configId;
         uint256 _tokenId = 0;
         uint256 _type = 1; // Edition
         //ERC721 _erc721 = ERC721(contractAddress);
 
-        require(contractType[contractAddress] == 0, "Contract Already Registered as Edition"); 
+        require(contractType[_contractAddress] == 0, "Contract Already Registered as Edition"); 
         //_erc721.owner   
 
-        _configId = uint256(keccak256(abi.encodePacked(contractAddress, _tokenId, _type)));
+        _configId = uint256(keccak256(abi.encodePacked(_contractAddress, _tokenId, _type)));
 
-        configMapping[contractAddress][_tokenId] = _configId;
+        configMapping[_contractAddress][_tokenId] = _configId;
         usersMusic[msg.sender].push(_configId);
         //tokenMinted++;
         //configTokenMapping[_configId] = tokenMinted;
-        contractType[contractAddress] = 1;
+        contractType[_contractAddress] = 1;
         tokenMapping[_configId] = MusicConfig({
-            contractAddress: contractAddress, // The contract address
+            contractAddress: _contractAddress, // The contract address
             tokenId: _tokenId, // The ID of the token on the contract
             contractType: _type, // Music collection type 
             contractOwner: msg.sender, // NFT contract owner
@@ -142,25 +147,30 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
         });
     }
 
-    function registerCollection(address contractAddress, uint256 _tokenId, string memory _tokenURI) public whenNotPaused {
+    function registerCollection(address _contractAddress, uint256 _tokenId, string memory _tokenURI, bytes calldata signature) public whenNotPaused {
+        
+        bytes32 msgHash = keccak256(abi.encodePacked(msg.sender, _contractAddress, _tokenId));
+        bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", msgHash));
+        require(managerAddress == signedHash.recover(signature), "Signer address mismatch.");
+        
         uint256 _configId;
         uint256 _type = 2; // Collection
         //ERC721 _erc721 = ERC721(contractAddress);
 
-        require(contractType[contractAddress] != 1, "Contract Already Registered as Edition"); 
-        if(contractType[contractAddress] == 2) {
-            require(configMapping[contractAddress][_tokenId] == 0, "Colleciton with given token id already registered");
+        require(contractType[_contractAddress] != 1, "Contract Already Registered as Edition"); 
+        if(contractType[_contractAddress] == 2) {
+            require(configMapping[_contractAddress][_tokenId] == 0, "Colleciton with given token id already registered");
         }
 
-        _configId = uint256(keccak256(abi.encodePacked(contractAddress, _tokenId, _type)));
+        _configId = uint256(keccak256(abi.encodePacked(_contractAddress, _tokenId, _type)));
 
-        configMapping[contractAddress][_tokenId] = _configId;
+        configMapping[_contractAddress][_tokenId] = _configId;
         usersMusic[msg.sender].push(_configId);
         //tokenMinted++;
         //configTokenMapping[_configId] = tokenMinted;
-        contractType[contractAddress] = 1;
+        contractType[_contractAddress] = 1;
         tokenMapping[_configId] = MusicConfig({
-            contractAddress: contractAddress, // The contract address
+            contractAddress: _contractAddress, // The contract address
             tokenId: _tokenId, // The ID of the token on the contract
             contractType: _type, // Music collection type 
             contractOwner: msg.sender, // NFT contract owner
