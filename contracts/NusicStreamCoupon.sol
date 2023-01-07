@@ -44,13 +44,14 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
     mapping(address => mapping(uint256 => uint256)) public configMapping; // contractAddress => tokenId => configId
     mapping(uint256 => uint256) public configTokenMapping; // configId => token Id in this contract
 
-    mapping(uint256 => mapping(address => uint256)) public streamCount; // tokenId => holder address => stream count
+    mapping(uint256 => mapping(address => uint256)) public streamsCount; // tokenId => holder address => stream count
 
     event Claimed(address indexed to, uint256 tokenId, address nftContractAddress, uint256 nftContractTokenNumber);
 
     constructor(string memory name_, string memory symbol_) ERC1155(""){
         _name = name_;
         _symbol = symbol_;
+        managerAddress = msg.sender;
         defaultURI = "https://bafkreigj4ynovugfqsewvfgche6ql5gozlox7p5cjfiw7uelfscfbk3keu.ipfs.nftstorage.link/";
     }
 
@@ -106,6 +107,7 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
         emit TokenMinted(_to, _id, _amount);
     }
 */
+/*
     function testEnum(address addr1, address addr2) public {
         //contractType[addr1] = EDITION;
         //contractType[addr2] = COLLECTION;
@@ -115,6 +117,7 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
         contractType[addr2] = 2;
         
     }
+    */
 
     function registerEdition(address _contractAddress, uint256 _fractions, string memory _tokenURI, bytes calldata signature) public whenNotPaused {
         
@@ -198,6 +201,7 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
         uint256 _tokenSupply = totalSupply(_tokenId); 
         require(_tokenSupply + _fractionCount <= _musicConfig.fractions, "Cannot mint too much");
         
+        streamsCount[_tokenId][msg.sender] = _streamCount;
 
         _mint(msg.sender, _tokenId, _fractionCount, "");
 
