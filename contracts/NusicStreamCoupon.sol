@@ -189,7 +189,7 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
     }
     
     // __fractionCount represent number of fraction to be given to caller of claim function
-    function claim(uint256 _configId, address _contractAddress,uint256 _tokenIdInContract, uint256 _streamCount, uint256 _timestamp, uint256 _fractionCount, bytes calldata signature) public whenNotPaused{
+    function claim(uint256 _configId, address _contractAddress,uint256 _tokenIdInContract, uint256 _streamCount, uint256 _timestamp, bytes calldata signature) public whenNotPaused{
 
         bytes32 msgHash = keccak256(abi.encodePacked(msg.sender, _configId, _contractAddress, _tokenIdInContract, _streamCount, _timestamp));
         bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", msgHash));
@@ -198,7 +198,7 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
         //tokenMinted++;
         require(_contractAddress != address(0), "Null Address Provided");
         require(_streamCount != 0, "Stream Count cannot be Zero");
-
+        uint256 _fractionCount = 1;
         MusicConfig memory _musicConfig = tokenMapping[_configId];
         require(_musicConfig.contractAddress == _contractAddress && _musicConfig.tokenId ==  _tokenIdInContract, "Incorrect Config provided");
 
