@@ -46,7 +46,10 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
 
     mapping(uint256 => mapping(address => uint256)) public streamsCount; // tokenId => holder address => stream count
 
-    event Claimed(address indexed to, uint256 tokenId, address nftContractAddress, uint256 nftContractTokenNumber);
+    event RegisteredEdition(uint256 configId, address contractAddress, uint256 fractions, address contractOwnerAddress);
+    event RegisteredCollection(uint256 configId, address contractAddress, uint256 tokenIdInContract, address contractOwnerAddress);
+
+    event Claimed(uint256 configId, address contractAddress, uint256 tokenIdInContract, uint256 streamCount, uint256 timestamp, uint256 fractionCount, address claimerAddress, uint256 tokenId);
 
     constructor(string memory name_, string memory symbol_) ERC1155(""){
         _name = name_;
@@ -148,6 +151,8 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
             fractions: _fractions,
             tokenURI:_tokenURI
         });
+        console.log("registerEdition configId = ", _configId);
+        emit RegisteredEdition(_configId, _contractAddress, _fractions, msg.sender);
     }
 
     function registerCollection(address _contractAddress, uint256 _tokenId, string memory _tokenURI, bytes calldata signature) public whenNotPaused {
@@ -180,18 +185,22 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
             fractions: 2,
             tokenURI:_tokenURI
         });
+        emit RegisteredCollection(_configId, _contractAddress, _tokenId, msg.sender);
     }
     
-
+    // __fractionCount represent number of fraction to be given to caller of claim function
     function claim(uint256 _configId, address _contractAddress,uint256 _tokenIdInContract, uint256 _streamCount, uint256 _timestamp, uint256 _fractionCount, bytes calldata signature) public whenNotPaused{
 
-        bytes32 msgHash = keccak256(abi.encodePacked(msg.sender, _contractAddress, _tokenIdInContract, _streamCount, _timestamp));
+        bytes32 msgHash = keccak256(abi.encodePacked(msg.sender, _configId, _contractAddress, _tokenIdInContract, _streamCount, _timestamp));
         bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", msgHash));
         require(managerAddress == signedHash.recover(signature), "Signer address mismatch.");
         //_safeMint(msg.sender, tokenMinted);
         //tokenMinted++;
+        require(_contractAddress != address(0), "Null Address Provided");
+        require(_streamCount != 0, "Stream Count cannot be Zero");
+
         MusicConfig memory _musicConfig = tokenMapping[_configId];
-        require(_musicConfig.contractAddress == _contractAddress, "Incorrect Config provided");
+        require(_musicConfig.contractAddress == _contractAddress && _musicConfig.tokenId ==  _tokenIdInContract, "Incorrect Config provided");
 
         uint256 _tokenId = configTokenMapping[_configId];
         if(_tokenId == 0) {
@@ -201,17 +210,12 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
         uint256 _tokenSupply = totalSupply(_tokenId); 
         require(_tokenSupply + _fractionCount <= _musicConfig.fractions, "Cannot mint too much");
         
-        streamsCount[_tokenId][msg.sender] = _streamCount;
+        if(streamsCount[_tokenId][msg.sender] == 0) {
+            _mint(msg.sender, _tokenId, _fractionCount, "");
+        }
+        streamsCount[_tokenId][msg.sender] += _streamCount;
 
-        _mint(msg.sender, _tokenId, _fractionCount, "");
-
-        emit Claimed(msg.sender, tokenMinted, address(0), 1);
-
-        /*
-        for(uint256 i=0; i<tokenQuantity; i++) {
-            tokenMinted++;// if want to start with zero than remove then use prefix ++
-            _safeMint(msg.sender, tokenMinted); 
-            emit Minted(msg.sender, tokenQuantity, msg.value, "CryptoNative");
-        }*/
+        // configId, _contractAddress, _tokenIdInContract, _streamCount, _timestamp, _fractionCount, _tokenId
+        emit Claimed(_configId, _contractAddress, _tokenIdInContract, _streamCount, _timestamp, _fractionCount, msg.sender, _tokenId);
     }
 }
