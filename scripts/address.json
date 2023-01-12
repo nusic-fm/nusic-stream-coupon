@@ -1,9 +1,13 @@
 {
     "localhost": {
-        "nusicStreamCoupon":"0x5FbDB2315678afecb367f032d93F642f64180aa3"
+        "nusicStreamCoupon":"0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        "nftMockOwnable":"0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+        "nftMock": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
     },
     "matic": {
-        "nusicStreamCoupon":"0x2161C9a325EDA297B07816A1513Bf39C247581cf"
+        "nusicStreamCoupon":"0x0c58439A5dC29c71CE1De36486967e4BFEf71C2C",
+        "nftMockOwnable":"0x9016F08122EFC5b0B47935a60B831222E6d3EC9d",
+        "nftMock": "0xcD4D4ca64eE0cd7bd2f7b16Cd0d34b4fa7390162"
     },
     "polygon": {
         "nusicStreamCoupon":"0xD0419a8d40F4bE0CB988b29040582ff1B6bBA460"
