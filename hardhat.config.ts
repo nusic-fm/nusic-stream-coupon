@@ -74,14 +74,14 @@ export default {
       url:' http://127.0.0.1:8545/'
     },
     */
-    
+    /*
     moonbase: {
       url: 'https://rpc.api.moonbase.moonbeam.network',
       chainId: 1287, // (hex: 0x507),
       //accounts: [`0x${PRIVATE_KEY}`]
       accounts: [`0x${PRIVATE_KEY}`]
     },
-    
+    */
     /*
     moonriver: {
       url: 'https://rpc.api.moonriver.moonbeam.network',
@@ -117,12 +117,12 @@ export default {
       accounts: [`0x${PRIVATE_KEY}`]
     },
     */
-
+    /*
     polygon: {
       url: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY_POLYGON_MAINNET}`,
       accounts: [`0x${PROD_PRIVATE_KEY}`]
     },
-    
+    */
     /*
     mainnet: {
       url: `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_MAINNET_KEY}`,
