@@ -32,7 +32,7 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
         uint256 contractType; // Music collection type -- 1 for EDITION or 2 for COLLECTION
         address contractOwner; // NFT Contract Owner Address,
         uint256 fractions;
-        string tokenURI;
+        //string tokenURI;
     }
 
     mapping(uint256 => string) private _tokenURIs;
@@ -122,7 +122,7 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
     }
     */
 
-    function registerEdition(address _contractAddress, uint256 _fractions, string memory _tokenURI, bytes calldata signature) public whenNotPaused {
+    function registerEdition(address _contractAddress, uint256 _fractions, bytes calldata signature) public whenNotPaused {
         
         bytes32 msgHash = keccak256(abi.encodePacked(msg.sender, _contractAddress, _fractions));
         bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", msgHash));
@@ -148,14 +148,13 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
             tokenId: _tokenId, // The ID of the token on the contract
             contractType: _type, // Music collection type 
             contractOwner: msg.sender, // NFT contract owner
-            fractions: _fractions,
-            tokenURI:_tokenURI
+            fractions: _fractions
         });
         console.log("registerEdition configId = ", _configId);
         emit RegisteredEdition(_configId, _contractAddress, _fractions, msg.sender);
     }
 
-    function registerCollection(address _contractAddress, uint256 _tokenId, string memory _tokenURI, bytes calldata signature) public whenNotPaused {
+    function registerCollection(address _contractAddress, uint256 _tokenId, bytes calldata signature) public whenNotPaused {
         
         bytes32 msgHash = keccak256(abi.encodePacked(msg.sender, _contractAddress, _tokenId));
         bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", msgHash));
@@ -182,14 +181,13 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
             tokenId: _tokenId, // The ID of the token on the contract
             contractType: _type, // Music collection type 
             contractOwner: msg.sender, // NFT contract owner
-            fractions: 2,
-            tokenURI:_tokenURI
+            fractions: 2
         });
         emit RegisteredCollection(_configId, _contractAddress, _tokenId, msg.sender);
     }
     
     // __fractionCount represent number of fraction to be given to caller of claim function
-    function claim(uint256 _configId, address _contractAddress,uint256 _tokenIdInContract, uint256 _streamCount, uint256 _timestamp, bytes calldata signature) public whenNotPaused{
+    function claim(uint256 _configId, address _contractAddress,uint256 _tokenIdInContract, uint256 _streamCount, uint256 _timestamp, string memory _tokenURI, bytes calldata signature) public whenNotPaused{
 
         bytes32 msgHash = keccak256(abi.encodePacked(msg.sender, _configId, _contractAddress, _tokenIdInContract, _streamCount, _timestamp));
         bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", msgHash));
@@ -214,6 +212,7 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
             _mint(msg.sender, _tokenId, _fractionCount, "");
         }
         streamsCount[_tokenId][msg.sender] += _streamCount;
+        _tokenURIs[_tokenId] = _tokenURI;
 
         // configId, _contractAddress, _tokenIdInContract, _streamCount, _timestamp, _fractionCount, _tokenId
         emit Claimed(_configId, _contractAddress, _tokenIdInContract, _streamCount, _timestamp, _fractionCount, msg.sender, _tokenId);
