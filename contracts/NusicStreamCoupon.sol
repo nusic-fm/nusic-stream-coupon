@@ -98,8 +98,12 @@ contract NusicStreamCoupon is ERC1155Supply, Pausable, Ownable  {
         return bytes(_tokenURI).length > 0 ? _tokenURI : defaultURI;
     }
 
-    function setManager(address _manager) public onlyOwner{
+    function setManager(address _manager) public onlyOwner {
         managerAddress = _manager;
+    }
+
+    function updateTokenURI(uint256 _tokenId, string memory _tokenURI) public onlyOwnerOrManager {
+        _tokenURIs[_tokenId] = _tokenURI;
     }
 
 /*
