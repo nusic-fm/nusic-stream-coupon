@@ -5,9 +5,9 @@
         "nftMock": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
     },
     "matic": {
-        "nusicStreamCoupon":"0x0c58439A5dC29c71CE1De36486967e4BFEf71C2C",
-        "nftMockOwnable":"0x9016F08122EFC5b0B47935a60B831222E6d3EC9d",
-        "nftMock": "0xcD4D4ca64eE0cd7bd2f7b16Cd0d34b4fa7390162"
+        "nusicStreamCoupon":"0x43F5719065f9bf6e839d4c5A838d2e9Dc7c6103f",
+        "nftMockOwnable":"0x741536A16560FFf3437D0EE613Eac8fbBe8d26B0",
+        "nftMock": "0x7D379D1E8fDE2A955834e12b1B25Bb0dB9a288c6"
     },
     "polygon": {
         "nusicStreamCoupon":"0xD0419a8d40F4bE0CB988b29040582ff1B6bBA460"
